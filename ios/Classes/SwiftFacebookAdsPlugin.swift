@@ -72,7 +72,7 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBRewardedVideoAdD
     }
     
     public func rewardedVideoAd(_ rewardedVideoAd: FBRewardedVideoAd, didFailWithError error: Error) {
-        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onRewardedVideoAdDidFail", arguments: ["Error" : error])
+        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onRewardedVideoAdDidFail", arguments: ["Error" : error.localizedDescription])
     }
     
 
