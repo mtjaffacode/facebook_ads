@@ -49,11 +49,13 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDe
   }
     
     public func initRewardVideoAd(placementId: String) {
+        FBAdSettings.setIsChildDirected(true)
         facebookRewardedAd = FBRewardedVideoAd(placementID: placementId)
         facebookRewardedAd?.delegate = self
     }
     
     public func initInterstitialAd(placementId: String) {
+        FBAdSettings.setIsChildDirected(true)
         facebookInterstitialAd = FBInterstitialAd(placementID: placementId)
         facebookInterstitialAd?.delegate = self
     }
