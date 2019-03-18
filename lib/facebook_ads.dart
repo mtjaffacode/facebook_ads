@@ -211,7 +211,7 @@ class FacebookAds {
   <String, InterstitialAdEvent>{
     'onInterstitialAdDidClick': InterstitialAdEvent.clicked,
     'onInterstitialAdDidClose': InterstitialAdEvent.closed,
-    'onInterstititalAdDidFail': InterstitialAdEvent.failedToLoad,
+    'onInterstitialAdDidFail': InterstitialAdEvent.failedToLoad,
     'onInterstitialAdDidLoad': InterstitialAdEvent.loaded,
     'onInterstitialAdWillLogImpression': InterstitialAdEvent.impression,
     'onInterstatialAdVideoComplete': InterstitialAdEvent.completed,
