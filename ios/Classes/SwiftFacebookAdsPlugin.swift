@@ -2,8 +2,9 @@ import Flutter
 import UIKit
 import FBAudienceNetwork
 
-public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBRewardedVideoAdDelegate {
+public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDelegate, FBRewardedVideoAdDelegate {
     var facebookRewardedAd: FBRewardedVideoAd? = nil
+    var facebookInterstitialAd: FBInterstitialAd? = nil;
     static var theInstance: FlutterMethodChannel? = nil
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "facebook_ads", binaryMessenger: registrar.messenger())
@@ -15,6 +16,19 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBRewardedVideoAdD
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     if (call.method == "getPlatformVersion") {
         result("iOS " + UIDevice.current.systemVersion)
+    } else if (call.method == "loadInterstitialAd") {
+        let arguments = call.arguments as! Dictionary<String, AnyObject>
+        initInterstitialAd(placementId: arguments["placementId"] as! String)
+        facebookInterstitialAd?.load()
+        result(true)
+    } else if (call.method == "showInterstitialAd") {
+        if let valid = facebookInterstitialAd?.isAdValid {
+            if valid {
+                facebookInterstitialAd?.show(fromRootViewController: (UIApplication.shared.windows.first?.rootViewController)!)
+                result(true)
+            }
+        }
+        result(false)
     } else if (call.method == "loadAd") {
         let arguments = call.arguments as! Dictionary<String, AnyObject>
         initRewardVideoAd(placementId: arguments["placementId"] as! String)
@@ -37,6 +51,35 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBRewardedVideoAdD
     public func initRewardVideoAd(placementId: String) {
         facebookRewardedAd = FBRewardedVideoAd(placementID: placementId)
         facebookRewardedAd?.delegate = self
+    }
+    
+    public func initInterstitialAd(placementId: String) {
+        facebookInterstitialAd = FBInterstitialAd(placementID: placementId)
+        facebookInterstitialAd?.delegate = self
+    }
+    
+    public func interstitialAdDidLoad(_ interstitialAd: FBInterstitialAd) {
+        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onInterstitialAdDidLoad", arguments: Dictionary<String, Any>())
+    }
+    
+    public func interstitialAdDidClick(_ interstitialAd: FBInterstitialAd) {
+        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onInterstitialAdDidClick", arguments: Dictionary<String, Any>())
+    }
+    
+    public func interstitialAdDidClose(_ interstitialAd: FBInterstitialAd) {
+        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onInterstitialAdDidClose", arguments: Dictionary<String, Any>())
+    }
+    
+    public func interstitialAdWillClose(_ interstitialAd: FBInterstitialAd) {
+        
+    }
+    
+    public func interstitialAdWillLogImpression(_ interstitialAd: FBInterstitialAd) {
+        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onInterstitalAdWillLogImpression", arguments: Dictionary<String, Any>())
+    }
+    
+    public func interstitialAd(_ interstitialAd: FBInterstitialAd, didFailWithError error: Error) {
+        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onInterstitialAdDidFail", arguments: ["Error" : error.localizedDescription])
     }
     
     public func rewardedVideoAdDidClick(_ rewardedVideoAd: FBRewardedVideoAd) {

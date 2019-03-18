@@ -24,6 +24,19 @@ enum RewardedVideoAdEvent {
   completed,
 }
 
+enum InterstitialAdEvent {
+  loaded,
+  failedToLoad,
+  clicked,
+  impression,
+//  opened,
+//  leftApplication,
+  closed,
+//  rewarded,
+//  started,
+  completed,
+}
+
 /// Signature for a [RewardedVideoAd] status change callback. The optional
 /// parameters are only used when the [RewardedVideoAdEvent.rewarded] event
 /// is sent, when they'll contain the reward amount and reward type that were
@@ -31,6 +44,8 @@ enum RewardedVideoAdEvent {
 /// all other events.
 typedef void RewardedVideoAdListener(RewardedVideoAdEvent event,
     {String rewardType, int rewardAmount});
+
+    typedef void InterstitialAdListener(InterstitialAdEvent event);
 
 /// An AdMob rewarded video ad.
 ///
@@ -99,6 +114,39 @@ class RewardedVideoAd {
   }
 }
 
+class InterstitialAd {
+  InterstitialAd._();
+
+  /// A platform-specific AdMob test ad unit ID for rewarded video ads. This ad
+  /// unit has been specially configured to always return test ads, and
+  /// developers are encouraged to use it while building and testing their apps.
+//  static final String testAdUnitId = Platform.isAndroid
+//      ? 'ca-app-pub-3940256099942544/5224354917'
+//      : 'ca-app-pub-3940256099942544/1712485313';
+
+  static final InterstitialAd _instance = InterstitialAd._();
+
+  /// The one and only instance of this class.
+  static InterstitialAd get instance => _instance;
+
+  /// Callback invoked for events in the rewarded video ad lifecycle.
+  InterstitialAdListener listener;
+
+  /// Shows a rewarded video ad if one has been loaded.
+  Future<bool> show() {
+    return _invokeBooleanMethod("showInterstitialAd");
+  }
+
+  /// Loads a rewarded video ad using the provided ad unit ID.
+  Future<bool> load(
+      {@required String placementId}) {
+    assert(placementId.isNotEmpty);
+    return _invokeBooleanMethod("loadInterstitialAd", <String, dynamic>{
+      'placementId': placementId,
+    });
+  }
+}
+
 /// Support for Google AdMob mobile ads.
 ///
 /// Before loading or showing an ad the plugin must be initialized with
@@ -159,6 +207,16 @@ class FacebookAds {
     'onRewardedVideoAdVideoComplete': RewardedVideoAdEvent.completed,
   };
 
+  static const Map<String, InterstitialAdEvent> _methodToInterstitialAdEvent =
+  <String, InterstitialAdEvent>{
+    'onInterstitialAdDidClick': InterstitialAdEvent.clicked,
+    'onInterstitialAdDidClose': InterstitialAdEvent.closed,
+    'onInterstititalAdDidFail': InterstitialAdEvent.failedToLoad,
+    'onInterstitialAdDidLoad': InterstitialAdEvent.loaded,
+    'onInterstitialAdWillLogImpression': InterstitialAdEvent.impression,
+    'onInterstatialAdVideoComplete': InterstitialAdEvent.completed,
+  };
+
 
   Future<dynamic> _handleMethod(MethodCall call) {
     assert(call.arguments is Map);
@@ -171,6 +229,14 @@ class FacebookAds {
           RewardedVideoAd.instance.listener(rewardedEvent);
         } else {
           RewardedVideoAd.instance.listener(rewardedEvent);
+        }
+      }
+    } else {
+      final InterstitialAdEvent interstitialEvent =
+      _methodToInterstitialAdEvent[call.method];
+      if (interstitialEvent != null) {
+        if (InterstitialAd.instance.listener != null) {
+          InterstitialAd.instance.listener(interstitialEvent);
         }
       }
     }
