@@ -33,7 +33,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       val placementId: String? = call.argument<String>("placementId")
       initInterstitialAd(placementId)
       FacebookAdsPlugin.showingRewardedAd = false
-      FacebookAdsPlugin.facebookRewardedAd?.loadAd()
+      FacebookAdsPlugin.facebookInterstitialAd?.loadAd()
     } else if (call.method == "showInterstitialAd") {
       FacebookAdsPlugin.showingRewardedAd = false
       val a = FacebookAdsPlugin.facebookInterstitialAd?.isAdLoaded.let {
