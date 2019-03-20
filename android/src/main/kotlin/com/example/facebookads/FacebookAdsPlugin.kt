@@ -22,6 +22,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       val channel = MethodChannel(registrar.messenger(), "facebook_ads")
       channel.setMethodCallHandler(FacebookAdsPlugin())
       FacebookAdsPlugin.instanceChannel = channel
+      com.facebook.ads.AudienceNetworkAds.initialize(registrar.context())
     }
   }
 
