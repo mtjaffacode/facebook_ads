@@ -23,7 +23,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       channel.setMethodCallHandler(FacebookAdsPlugin())
       FacebookAdsPlugin.instanceChannel = channel
       com.facebook.ads.AudienceNetworkAds.initialize(registrar.activity())
-
+      AdSettings.setIntegrationErrorMode(AdSettings.IntegrationErrorMode.INTEGRATION_ERROR_CRASH_DEBUG_MODE)
     }
   }
 
