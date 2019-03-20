@@ -67,7 +67,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     AdSettings.setIsChildDirected(true)
     AdSettings.addTestDevice("6eb6ed7d-becc-42af-8d50-5ebaf6ec1ec7")
 //    AdSettings.setTestMode(true)
-    val context = FacebookAdsPlugin.registrar?.activeContext()
+    val context = FacebookAdsPlugin.registrar?.activity()
     FacebookAdsPlugin.facebookRewardedAd = com.facebook.ads.RewardedVideoAd(context, placementId)
     FacebookAdsPlugin.facebookRewardedAd?.setAdListener(this)
   }
@@ -76,7 +76,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     AdSettings.setIsChildDirected(true)
     AdSettings.addTestDevice("6eb6ed7d-becc-42af-8d50-5ebaf6ec1ec7")
 //    AdSettings.setTestMode(true)
-    val context = FacebookAdsPlugin.registrar?.activeContext()
+    val context = FacebookAdsPlugin.registrar?.activity()
     FacebookAdsPlugin.facebookInterstitialAd = com.facebook.ads.InterstitialAd(context, placementId)
     FacebookAdsPlugin.facebookInterstitialAd?.setAdListener(this)
   }
