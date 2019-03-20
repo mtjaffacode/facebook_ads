@@ -82,7 +82,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
   }
 
   override fun onInterstitialDismissed(p0: Ad?) {
-    FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidClose", {})
+    FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidClose", mapOf("" to ""))
   }
 
   override fun onInterstitialDisplayed(p0: Ad?) {
@@ -90,22 +90,22 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
   }
 
   override fun onRewardedVideoClosed() {
-    FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidClose", {})
+    FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidClose", mapOf("" to ""))
   }
 
   override fun onAdClicked(p0: Ad?) {
     if (FacebookAdsPlugin.showingRewardedAd) {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidClick", {})
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidClick", mapOf("" to ""))
     } else {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidClick", {})
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidClick", mapOf("" to ""))
     }
   }
 
   override fun onAdLoaded(p0: Ad?) {
     if (FacebookAdsPlugin.showingRewardedAd) {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidLoad", {})
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidLoad", mapOf("" to ""))
     } else {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidLoad", {})
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidLoad", mapOf("" to ""))
     }
   }
 
@@ -119,13 +119,13 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
 
   override fun onLoggingImpression(p0: Ad?) {
     if (FacebookAdsPlugin.showingRewardedAd) {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdWillLogImpression", {})
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdWillLogImpression", mapOf("" to ""))
     } else {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdWillLogImpression", {})
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdWillLogImpression", mapOf("" to ""))
     }
   }
 
   override fun onRewardedVideoCompleted() {
-    FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdVideoComplete", {})
+    FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdVideoComplete", mapOf("" to ""))
   }
 }
