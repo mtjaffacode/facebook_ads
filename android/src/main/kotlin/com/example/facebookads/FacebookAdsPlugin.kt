@@ -108,9 +108,9 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
 
   override fun onError(p0: Ad?, p1: AdError?) {
     if (FacebookAdsPlugin.showingRewardedAd) {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidFail", mapOf("Error" to p1.toString()))
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onRewardedVideoAdDidFail", mapOf("Error" to p1?.errorMessage))
     } else {
-      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidFail", mapOf("Error" to p1.toString()))
+      FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidFail", mapOf("Error" to p1?.errorMessage))
     }
   }
 
