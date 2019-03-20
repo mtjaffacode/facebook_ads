@@ -14,7 +14,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     var instanceChannel: MethodChannel? = null
     var showingRewardedAd = false
     var facebookRewardedAd: com.facebook.ads.RewardedVideoAd? = null
-    var facebookInterstitialAd: com.facebook.ads.InterstitialAd? = null;
+    var facebookInterstitialAd: com.facebook.ads.InterstitialAd? = null
     var registrar: Registrar? = null
     @JvmStatic
     fun registerWith(registrar: Registrar) {
@@ -82,6 +82,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
   }
 
   override fun onInterstitialDismissed(p0: Ad?) {
+    FacebookAdsPlugin.facebookInterstitialAd?.destroy()
     FacebookAdsPlugin.instanceChannel?.invokeMethod("onInterstitialAdDidClose", mapOf("" to ""))
   }
 
