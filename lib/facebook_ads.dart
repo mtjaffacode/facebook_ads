@@ -37,6 +37,18 @@ enum InterstitialAdEvent {
   completed,
 }
 
+enum AdColonyRewardedVideoAdEvent {
+  loaded,
+  failedToLoad,
+  clicked,
+//  opened,
+//  leftApplication,
+  closed,
+//  rewarded,
+//  started,
+  completed,
+}
+
 /// Signature for a [RewardedVideoAd] status change callback. The optional
 /// parameters are only used when the [RewardedVideoAdEvent.rewarded] event
 /// is sent, when they'll contain the reward amount and reward type that were
@@ -46,6 +58,8 @@ typedef void RewardedVideoAdListener(RewardedVideoAdEvent event,
     {String rewardType, int rewardAmount});
 
     typedef void InterstitialAdListener(InterstitialAdEvent event);
+
+typedef void AdColonyRewardedVideoAdListener(AdColonyRewardedVideoAdEvent event);
 
 /// An AdMob rewarded video ad.
 ///
@@ -110,6 +124,36 @@ class RewardedVideoAd {
     assert(placementId.isNotEmpty);
     return _invokeBooleanMethod("loadAd", <String, dynamic>{
       'placementId': placementId,
+    });
+  }
+}
+
+class AdColonyRewardedVideoAd {
+  AdColonyRewardedVideoAd._();
+
+  static final AdColonyRewardedVideoAd _instance = AdColonyRewardedVideoAd._();
+
+  /// The one and only instance of this class.
+  static AdColonyRewardedVideoAd get instance => _instance;
+
+  /// Callback invoked for events in the rewarded video ad lifecycle.
+  AdColonyRewardedVideoAdListener listener;
+
+  /// Shows a rewarded video ad if one has been loaded.
+  Future<bool> show() {
+    return _invokeBooleanMethod("showAdColonyRewardedAd");
+  }
+  
+  Future<bool> initAdColonyZones(String appId, List<String> zoneIds) {
+    return _invokeBooleanMethod("initAdColonyAdsWithZones", <String, dynamic>{ 'appId': appId, 'zoneIds': zoneIds });
+  }
+
+  /// Loads a rewarded video ad using the provided ad unit ID.
+  Future<bool> load(
+      {@required String zoneId}) {
+    assert(zoneId.isNotEmpty);
+    return _invokeBooleanMethod("loadAdColonyRewardedAd", <String, dynamic>{
+      'zoneId': zoneId,
     });
   }
 }
@@ -211,10 +255,19 @@ class FacebookAds {
   <String, InterstitialAdEvent>{
     'onInterstitialAdDidClick': InterstitialAdEvent.clicked,
     'onInterstitialAdDidClose': InterstitialAdEvent.closed,
-    'onInterstitialAdDidFail': InterstitialAdEvent.failedToLoad,
+    'onInterstititalAdDidFail': InterstitialAdEvent.failedToLoad,
     'onInterstitialAdDidLoad': InterstitialAdEvent.loaded,
     'onInterstitialAdWillLogImpression': InterstitialAdEvent.impression,
     'onInterstatialAdVideoComplete': InterstitialAdEvent.completed,
+  };
+
+  static const Map<String, AdColonyRewardedVideoAdEvent> _methodToAdColonyRewardedAdEvent =
+  <String, AdColonyRewardedVideoAdEvent>{
+    'onAdColonyInterstitialDidClick': AdColonyRewardedVideoAdEvent.clicked,
+    'onAdColonyInterstitialDidClose': AdColonyRewardedVideoAdEvent.closed,
+    'onAdColonyInterstitialDidFail': AdColonyRewardedVideoAdEvent.failedToLoad,
+    'onAdColonyInterstitialDidLoad': AdColonyRewardedVideoAdEvent.loaded,
+    'onAdColonyInterstitialDidReward': AdColonyRewardedVideoAdEvent.completed,
   };
 
 
@@ -223,6 +276,10 @@ class FacebookAds {
     final Map<dynamic, dynamic> argumentsMap = call.arguments;
     final RewardedVideoAdEvent rewardedEvent =
     _methodToRewardedVideoAdEvent[call.method];
+    final InterstitialAdEvent interstitialEvent =
+    _methodToInterstitialAdEvent[call.method];
+    final AdColonyRewardedVideoAdEvent adColonyEvent =
+        _methodToAdColonyRewardedAdEvent[call.method];
     if (rewardedEvent != null) {
       if (RewardedVideoAd.instance.listener != null) {
         if (rewardedEvent == RewardedVideoAdEvent.completed) {
@@ -231,13 +288,15 @@ class FacebookAds {
           RewardedVideoAd.instance.listener(rewardedEvent);
         }
       }
-    } else {
-      final InterstitialAdEvent interstitialEvent =
-      _methodToInterstitialAdEvent[call.method];
+    } else if (interstitialEvent != null) {
       if (interstitialEvent != null) {
         if (InterstitialAd.instance.listener != null) {
           InterstitialAd.instance.listener(interstitialEvent);
         }
+      }
+    } else if (adColonyEvent != null) {
+      if (AdColonyRewardedVideoAd.instance.listener != null) {
+        AdColonyRewardedVideoAd.instance.listener(adColonyEvent);
       }
     }
 

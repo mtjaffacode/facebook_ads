@@ -1,10 +1,12 @@
 import Flutter
 import UIKit
 import FBAudienceNetwork
+import AdColony
 
 public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDelegate, FBRewardedVideoAdDelegate {
     var facebookRewardedAd: FBRewardedVideoAd? = nil
-    var facebookInterstitialAd: FBInterstitialAd? = nil;
+    var facebookInterstitialAd: FBInterstitialAd? = nil
+    var adColonyInterstitialAd: AdColonyInterstitial? = nil
     static var theInstance: FlutterMethodChannel? = nil
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "facebook_ads", binaryMessenger: registrar.messenger())
@@ -16,6 +18,35 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDe
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     if (call.method == "getPlatformVersion") {
         result("iOS " + UIDevice.current.systemVersion)
+    } else if (call.method == "initAdColonyAdsWithZones") {
+        let arguments = call.arguments as! Dictionary<String, AnyObject>
+        AdColony.configure(withAppID: arguments["appId"] as! String, zoneIDs: arguments["zoneIds"] as! [String], options: nil) { (zones) in
+            zones.forEach({ (zone) in
+                if (zone.rewarded) {
+                    zone.setReward({ (one, two, three) in
+                        SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onAdColonyInterstitialDidReward", arguments: Dictionary<String, Any>())
+                    })
+                }
+            })
+        }
+    } else if (call.method == "loadAdColonyRewardedAd") {
+        let arguments = call.arguments as! Dictionary<String, AnyObject>
+        initAdColonyRewardedAd(zoneId: arguments["zoneId"] as! String)
+        result(true)
+    } else if (call.method == "showAdColonyRewardedAd") {
+        if let ad = self.adColonyInterstitialAd, !ad.expired {
+            ad.setClose {
+                SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onAdColonyInterstitialDidClose", arguments: Dictionary<String, Any>())
+                self.adColonyInterstitialAd = nil
+            }
+            ad.setClick {
+                SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onAdColonyInterstitialDidClick", arguments: Dictionary<String, Any>())
+            }
+            ad.show(withPresenting: (UIApplication.shared.windows.first?.rootViewController)!)
+        } else {
+            SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onAdColonyInterstitialDidFail", arguments: ["Error" : "Invalid ad"])
+        }
+        result(true)
     } else if (call.method == "loadInterstitialAd") {
         let arguments = call.arguments as! Dictionary<String, AnyObject>
         initInterstitialAd(placementId: arguments["placementId"] as! String)
@@ -47,6 +78,15 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDe
 //        result(facebookRewardedAd?.isAdValid ?? false)
 //    }
   }
+    
+    public func initAdColonyRewardedAd(zoneId: String) {
+        AdColony.requestInterstitial(inZone: zoneId, options: nil, success: { (ad) in
+            self.adColonyInterstitialAd = ad
+            SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onAdColonyInterstitialDidLoad", arguments: Dictionary<String, Any>())
+        }) { (error) in
+            SwiftFacebookAdsPlugin.theInstance?.invokeMethod("onAdColonyInterstitialDidFail", arguments: ["Error" : error.localizedFailureReason])
+        }
+    }
     
     public func initRewardVideoAd(placementId: String) {
         FBAdSettings.setIsChildDirected(true)
