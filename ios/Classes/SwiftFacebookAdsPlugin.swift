@@ -28,6 +28,7 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDe
                     })
                 }
             })
+            result(true)
         }
     } else if (call.method == "loadAdColonyRewardedAd") {
         let arguments = call.arguments as! Dictionary<String, AnyObject>
