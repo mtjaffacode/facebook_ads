@@ -2,6 +2,7 @@ package com.example.facebookads
 
 import android.app.Application
 import com.facebook.ads.*
+import com.adcolony.sdk.*
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -15,6 +16,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     var showingRewardedAd = false
     var facebookRewardedAd: com.facebook.ads.RewardedVideoAd? = null
     var facebookInterstitialAd: com.facebook.ads.InterstitialAd? = null
+    var adColonyAd: AdColonyInterstitial? = null
     var registrar: Registrar? = null
     @JvmStatic
     fun registerWith(registrar: Registrar) {
@@ -30,6 +32,25 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
   override fun onMethodCall(call: MethodCall, result: Result) {
     if (call.method == "getPlatformVersion") {
       result.success("Android ${android.os.Build.VERSION.RELEASE}")
+    } else if (call.method == "initAdColonyAdsWithZones") {
+      val appId: String = call.argument<String>("appId")!!
+      val zoneIds: List<String> = call.argument<List<String>>("zoneIds")!!
+      AdColony.configure(FacebookAdsPlugin.registrar?.activity()?.application, appId, *zoneIds.toTypedArray())
+      AdColony.setRewardListener {
+        FacebookAdsPlugin.instanceChannel?.invokeMethod("onAdColonyInterstitialDidReward", mapOf("" to ""))
+      }
+      result.success(true)
+    } else if (call.method == "loadAdColonyRewardedAd") {
+      val zoneId: String = call.argument<String>("zoneId")!!
+      initAdColonyRewardedAd(zoneId)
+      result.success(true)
+    } else if (call.method == "showAdColonyRewardedAd") {
+      if (adColonyAd != null && !adColonyAd!!.isExpired) {
+        adColonyAd!!.show()
+      } else {
+        FacebookAdsPlugin.instanceChannel?.invokeMethod("onAdColonyInterstitialDidFail", mapOf("Error" to "Unknown"))
+      }
+      result.success(true)
     } else if (call.method == "loadInterstitialAd") {
       val placementId: String? = call.argument<String>("placementId")
       initInterstitialAd(placementId)
@@ -61,6 +82,29 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       result.success(false)
 
     }
+  }
+
+  fun initAdColonyRewardedAd(zoneId: String?) {
+    AdColony.requestInterstitial(zoneId!!, object : AdColonyInterstitialListener() {
+      override fun onRequestFilled(p0: AdColonyInterstitial?) {
+        adColonyAd = p0
+        FacebookAdsPlugin.instanceChannel?.invokeMethod("onAdColonyInterstitialDidLoad", mapOf("" to ""))
+      }
+
+      override fun onRequestNotFilled(zone: AdColonyZone?) {
+        FacebookAdsPlugin.instanceChannel?.invokeMethod("onAdColonyInterstitialDidFail", mapOf("Error" to "Unknown"))
+      }
+
+      override fun onClicked(ad: AdColonyInterstitial?) {
+        FacebookAdsPlugin.instanceChannel?.invokeMethod("onAdColonyInterstitialDidClick", mapOf("" to ""))
+      }
+
+      override fun onClosed(ad: AdColonyInterstitial?) {
+        ad?.destroy()
+        adColonyAd = null
+        FacebookAdsPlugin.instanceChannel?.invokeMethod("onAdColonyInterstitialDidClose", mapOf("" to ""))
+      }
+    })
   }
 
   fun initRewardVideoAd(placementId: String?) {
