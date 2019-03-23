@@ -24,7 +24,9 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDe
         let options = AdColonyAppOptions()
         options.gdprConsentString = "1.0"
         options.gdprRequired = true
-        options.testMode = isTestMode ? true : false
+        if (isTestMode) {
+            options.testMode = true
+        }
         AdColony.configure(withAppID: arguments["appId"] as! String, zoneIDs: arguments["zoneIds"] as! [String], options: options) { (zones) in
             zones.forEach({ (zone) in
                 if (zone.rewarded) {
