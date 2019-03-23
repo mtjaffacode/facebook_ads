@@ -20,7 +20,10 @@ public class SwiftFacebookAdsPlugin: NSObject, FlutterPlugin, FBInterstitialAdDe
         result("iOS " + UIDevice.current.systemVersion)
     } else if (call.method == "initAdColonyAdsWithZones") {
         let arguments = call.arguments as! Dictionary<String, AnyObject>
-        AdColony.configure(withAppID: arguments["appId"] as! String, zoneIDs: arguments["zoneIds"] as! [String], options: nil) { (zones) in
+        let options = AdColonyAppOptions()
+        options.gdprConsentString = "1.0"
+        options.gdprRequired = true
+        AdColony.configure(withAppID: arguments["appId"] as! String, zoneIDs: arguments["zoneIds"] as! [String], options: options) { (zones) in
             zones.forEach({ (zone) in
                 if (zone.rewarded) {
                     zone.setReward({ (one, two, three) in
