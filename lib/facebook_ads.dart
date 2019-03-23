@@ -144,8 +144,8 @@ class AdColonyRewardedVideoAd {
     return _invokeBooleanMethod("showAdColonyRewardedAd");
   }
   
-  Future<bool> initAdColonyZones(String appId, List<String> zoneIds) {
-    return _invokeBooleanMethod("initAdColonyAdsWithZones", <String, dynamic>{ 'appId': appId, 'zoneIds': zoneIds });
+  Future<bool> initAdColonyZones(bool forceTest, String appId, List<String> zoneIds) {
+    return _invokeBooleanMethod("initAdColonyAdsWithZones", <String, dynamic>{ 'appId': appId, 'zoneIds': zoneIds, "isTestMode": forceTest });
   }
 
   /// Loads a rewarded video ad using the provided ad unit ID.
