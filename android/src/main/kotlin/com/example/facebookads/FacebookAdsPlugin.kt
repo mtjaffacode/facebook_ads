@@ -35,7 +35,11 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     } else if (call.method == "initAdColonyAdsWithZones") {
       val appId: String = call.argument<String>("appId")!!
       val zoneIds: List<String> = call.argument<List<String>>("zoneIds")!!
-      AdColony.configure(FacebookAdsPlugin.registrar?.activity()?.application, appId, *zoneIds.toTypedArray())
+        var options: AdColonyAppOptions = AdColonyAppOptions()
+        options.gdprConsentString = "1.0"
+        options.gdprRequired = true
+        options.keepScreenOn = true
+      AdColony.configure(FacebookAdsPlugin.registrar?.activity()?.application, options, appId, *zoneIds.toTypedArray())
       AdColony.setRewardListener {
         FacebookAdsPlugin.instanceChannel?.invokeMethod("onAdColonyInterstitialDidReward", mapOf("" to ""))
       }
