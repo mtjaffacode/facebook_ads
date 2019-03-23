@@ -25,7 +25,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       channel.setMethodCallHandler(FacebookAdsPlugin())
       FacebookAdsPlugin.instanceChannel = channel
       com.facebook.ads.AudienceNetworkAds.initialize(registrar.activity())
-      AdSettings.setIntegrationErrorMode(AdSettings.IntegrationErrorMode.INTEGRATION_ERROR_CRASH_DEBUG_MODE)
+//      AdSettings.setIntegrationErrorMode(AdSettings.IntegrationErrorMode.INTEGRATION_ERROR_CRASH_DEBUG_MODE)
     }
   }
 
@@ -109,7 +109,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
 
   fun initRewardVideoAd(placementId: String?) {
     AdSettings.setIsChildDirected(true)
-    AdSettings.addTestDevice("6eb6ed7d-becc-42af-8d50-5ebaf6ec1ec7")
+//    AdSettings.addTestDevice("6eb6ed7d-becc-42af-8d50-5ebaf6ec1ec7")
 //    AdSettings.setTestMode(true)
     val context = FacebookAdsPlugin.registrar?.activity()
     FacebookAdsPlugin.facebookRewardedAd = com.facebook.ads.RewardedVideoAd(context, placementId)
