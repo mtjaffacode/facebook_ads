@@ -54,7 +54,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
         }
 
         override fun onReceiveAd(p0: com.startapp.android.publish.adsCommon.Ad?) {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidLoad", mapOf("" to ""))
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidLoad", mapOf("Error" to p0?.errorMessage))
         }
       })
 //      StartAppAd. .loadAd(AdMode.REWARDED_VIDEO);
