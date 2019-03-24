@@ -49,6 +49,14 @@ enum AdColonyRewardedVideoAdEvent {
   completed,
 }
 
+enum StartAppRewardedVideoAdEvent {
+  loaded,
+  failedToLoad,
+  clicked,
+  closed,
+  completed,
+}
+
 /// Signature for a [RewardedVideoAd] status change callback. The optional
 /// parameters are only used when the [RewardedVideoAdEvent.rewarded] event
 /// is sent, when they'll contain the reward amount and reward type that were
@@ -60,6 +68,9 @@ typedef void RewardedVideoAdListener(RewardedVideoAdEvent event,
     typedef void InterstitialAdListener(InterstitialAdEvent event);
 
 typedef void AdColonyRewardedVideoAdListener(AdColonyRewardedVideoAdEvent event);
+
+
+typedef void StartAppRewardedVideoAdListener(StartAppRewardedVideoAdEvent event);
 
 /// An AdMob rewarded video ad.
 ///
@@ -123,6 +134,32 @@ class RewardedVideoAd {
       {@required String placementId}) {
     assert(placementId.isNotEmpty);
     return _invokeBooleanMethod("loadAd", <String, dynamic>{
+      'placementId': placementId,
+    });
+  }
+}
+
+class StartAppRewardedVideoAd {
+  StartAppRewardedVideoAd._();
+
+  static final StartAppRewardedVideoAd _instance = StartAppRewardedVideoAd._();
+
+  /// The one and only instance of this class.
+  static StartAppRewardedVideoAd get instance => _instance;
+
+  /// Callback invoked for events in the rewarded video ad lifecycle.
+  StartAppRewardedVideoAdListener listener;
+
+  /// Shows a rewarded video ad if one has been loaded.
+  Future<bool> show() {
+    return _invokeBooleanMethod("showAppStartAd");
+  }
+
+  /// Loads a rewarded video ad using the provided ad unit ID.
+  Future<bool> load(
+      {@required String placementId}) {
+    assert(placementId.isNotEmpty);
+    return _invokeBooleanMethod("loadAppStartAd", <String, dynamic>{
       'placementId': placementId,
     });
   }
@@ -271,6 +308,16 @@ class FacebookAds {
   };
 
 
+  static const Map<String, StartAppRewardedVideoAdEvent> _methodToStartAppRewardedAdEvent =
+  <String, StartAppRewardedVideoAdEvent>{
+    'onStartAppAdDidClick': StartAppRewardedVideoAdEvent.clicked,
+    'onStartAppAdDidClose': StartAppRewardedVideoAdEvent.closed,
+    'onStartAppAdDidFail': StartAppRewardedVideoAdEvent.failedToLoad,
+    'onStartAppAdDidLoad': StartAppRewardedVideoAdEvent.loaded,
+    'onStartAppAdDidReward': StartAppRewardedVideoAdEvent.completed,
+  };
+
+
   Future<dynamic> _handleMethod(MethodCall call) {
     assert(call.arguments is Map);
     final Map<dynamic, dynamic> argumentsMap = call.arguments;
@@ -280,6 +327,8 @@ class FacebookAds {
     _methodToInterstitialAdEvent[call.method];
     final AdColonyRewardedVideoAdEvent adColonyEvent =
         _methodToAdColonyRewardedAdEvent[call.method];
+    final StartAppRewardedVideoAdEvent startAppEvent =
+        _methodToStartAppRewardedAdEvent[call.method];
     if (rewardedEvent != null) {
       if (RewardedVideoAd.instance.listener != null) {
         if (rewardedEvent == RewardedVideoAdEvent.completed) {
@@ -297,6 +346,10 @@ class FacebookAds {
     } else if (adColonyEvent != null) {
       if (AdColonyRewardedVideoAd.instance.listener != null) {
         AdColonyRewardedVideoAd.instance.listener(adColonyEvent);
+      }
+    } else if (startAppEvent != null) {
+      if (StartAppRewardedVideoAd.instance.listener != null) {
+        StartAppRewardedVideoAd.instance.listener(startAppEvent);
       }
     }
 

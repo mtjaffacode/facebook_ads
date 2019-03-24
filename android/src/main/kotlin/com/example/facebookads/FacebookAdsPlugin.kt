@@ -3,6 +3,11 @@ package com.example.facebookads
 import android.app.Application
 import com.facebook.ads.*
 import com.adcolony.sdk.*
+import com.startapp.android.publish.adsCommon.StartAppAd
+import com.startapp.android.publish.adsCommon.StartAppSDK
+import com.startapp.android.publish.adsCommon.VideoListener
+import com.startapp.android.publish.adsCommon.adListeners.AdDisplayListener
+import com.startapp.android.publish.adsCommon.adListeners.AdEventListener
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -17,6 +22,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     var facebookRewardedAd: com.facebook.ads.RewardedVideoAd? = null
     var facebookInterstitialAd: com.facebook.ads.InterstitialAd? = null
     var adColonyAd: AdColonyInterstitial? = null
+    var startAppAd: StartAppAd? = null
     var registrar: Registrar? = null
     @JvmStatic
     fun registerWith(registrar: Registrar) {
@@ -25,6 +31,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       channel.setMethodCallHandler(FacebookAdsPlugin())
       FacebookAdsPlugin.instanceChannel = channel
       com.facebook.ads.AudienceNetworkAds.initialize(registrar.activity())
+
 //      AdSettings.setIntegrationErrorMode(AdSettings.IntegrationErrorMode.INTEGRATION_ERROR_CRASH_DEBUG_MODE)
     }
   }
@@ -32,6 +39,49 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
   override fun onMethodCall(call: MethodCall, result: Result) {
     if (call.method == "getPlatformVersion") {
       result.success("Android ${android.os.Build.VERSION.RELEASE}")
+    } else if (call.method == "initAppStartAdsWithAppId") {
+      val appId: String = call.argument<String>("appId")!!
+      StartAppSDK.init(FacebookAdsPlugin.registrar?.activity(), appId, false)
+      StartAppSDK.setUserConsent (FacebookAdsPlugin.registrar?.activity(),
+              "pas",
+              System.currentTimeMillis(),
+              true)
+    } else if (call.method == "loadAppStartAd") {
+      startAppAd = StartAppAd(FacebookAdsPlugin.registrar?.activity())
+      startAppAd?.loadAd(StartAppAd.AdMode.REWARDED_VIDEO, object: AdEventListener {
+        override fun onFailedToReceiveAd(p0: com.startapp.android.publish.adsCommon.Ad?) {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidFail", mapOf("" to ""))
+        }
+
+        override fun onReceiveAd(p0: com.startapp.android.publish.adsCommon.Ad?) {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidLoad", mapOf("" to ""))
+        }
+      })
+//      StartAppAd. .loadAd(AdMode.REWARDED_VIDEO);
+    } else if (call.method == "showAppStartAd") {
+      startAppAd?.setVideoListener(object: VideoListener {
+        override fun onVideoCompleted() {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidReward", mapOf("" to ""))
+        }
+      })
+      startAppAd?.showAd(object: AdDisplayListener {
+        override fun adClicked(p0: com.startapp.android.publish.adsCommon.Ad?) {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidClick", mapOf("" to ""))
+        }
+
+        override fun adDisplayed(p0: com.startapp.android.publish.adsCommon.Ad?) {
+
+        }
+
+        override fun adNotDisplayed(p0: com.startapp.android.publish.adsCommon.Ad?) {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidFail", mapOf("" to ""))
+        }
+
+        override fun adHidden(p0: com.startapp.android.publish.adsCommon.Ad?) {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidClose", mapOf("" to ""))
+          startAppAd = null
+        }
+      })
     } else if (call.method == "initAdColonyAdsWithZones") {
       val appId: String = call.argument<String>("appId")!!
       val zoneIds: List<String> = call.argument<List<String>>("zoneIds")!!
