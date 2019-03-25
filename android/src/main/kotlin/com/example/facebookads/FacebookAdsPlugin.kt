@@ -3,18 +3,15 @@ package com.example.facebookads
 import android.app.Application
 import com.facebook.ads.*
 import com.adcolony.sdk.*
-import com.startapp.android.publish.adsCommon.StartAppAd
-import com.startapp.android.publish.adsCommon.StartAppSDK
-import com.startapp.android.publish.adsCommon.VideoListener
-import com.startapp.android.publish.adsCommon.adListeners.AdDisplayListener
-import com.startapp.android.publish.adsCommon.adListeners.AdEventListener
+import com.unity3d.ads.IUnityAdsListener
+import com.unity3d.ads.UnityAds
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, InterstitialAdListener {
+class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, InterstitialAdListener, IUnityAdsListener {
 
   companion object {
     var instanceChannel: MethodChannel? = null
@@ -22,7 +19,6 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     var facebookRewardedAd: com.facebook.ads.RewardedVideoAd? = null
     var facebookInterstitialAd: com.facebook.ads.InterstitialAd? = null
     var adColonyAd: AdColonyInterstitial? = null
-    var startAppAd: StartAppAd? = null
     var registrar: Registrar? = null
     @JvmStatic
     fun registerWith(registrar: Registrar) {
@@ -36,52 +32,50 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     }
   }
 
+    override fun onUnityAdsError(error: UnityAds.UnityAdsError?, message: String?) {
+        FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to message))
+    }
+
+    override fun onUnityAdsFinish(placementId: String?, result: UnityAds.FinishState?) {
+        if (result == UnityAds.FinishState.COMPLETED) {
+            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidReward", mapOf("" to ""))
+            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
+        } else if (result == UnityAds.FinishState.SKIPPED) {
+            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
+        } else if (result == UnityAds.FinishState.ERROR) {
+            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
+        } else {
+            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
+        }
+    }
+
+    override fun onUnityAdsReady(placementId: String?) {
+    }
+
+    override fun onUnityAdsStart(placementId: String?) {
+//        FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("" to ""))
+    }
+
   override fun onMethodCall(call: MethodCall, result: Result) {
     if (call.method == "getPlatformVersion") {
       result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else if (call.method == "initAppStartAdsWithAppId") {
-      val appId: String = call.argument<String>("appId")!!
-      StartAppSDK.init(FacebookAdsPlugin.registrar?.activity(), appId, false)
-      StartAppSDK.setUserConsent (FacebookAdsPlugin.registrar?.activity(),
-              "pas",
-              System.currentTimeMillis(),
-              true)
-    } else if (call.method == "loadAppStartAd") {
-      startAppAd = StartAppAd(FacebookAdsPlugin.registrar?.activity())
-      startAppAd?.loadAd(StartAppAd.AdMode.REWARDED_VIDEO, object: AdEventListener {
-        override fun onFailedToReceiveAd(p0: com.startapp.android.publish.adsCommon.Ad?) {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidFail", mapOf("" to ""))
-        }
-
-        override fun onReceiveAd(p0: com.startapp.android.publish.adsCommon.Ad?) {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidLoad", mapOf("Error" to p0?.errorMessage))
-        }
-      })
+    } else if (call.method == "initUnityAds") {
+      val gameId: String = call.argument<String>("gameId")!!
+      com.unity3d.ads.UnityAds.initialize(FacebookAdsPlugin.registrar?.activity(), gameId, this)
+        result.success(true)
+    } else if (call.method == "loadUnityAd") {
+        val placementId: String = call.argument<String>("placementId")!!
+      if (UnityAds.isReady(placementId)) {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidLoad", mapOf("" to ""))
+      } else {
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ads not ready"))
+      }
+        result.success(true)
 //      StartAppAd. .loadAd(AdMode.REWARDED_VIDEO);
-    } else if (call.method == "showAppStartAd") {
-      startAppAd?.setVideoListener(object: VideoListener {
-        override fun onVideoCompleted() {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidReward", mapOf("" to ""))
-        }
-      })
-      startAppAd?.showAd(object: AdDisplayListener {
-        override fun adClicked(p0: com.startapp.android.publish.adsCommon.Ad?) {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidClick", mapOf("" to ""))
-        }
-
-        override fun adDisplayed(p0: com.startapp.android.publish.adsCommon.Ad?) {
-
-        }
-
-        override fun adNotDisplayed(p0: com.startapp.android.publish.adsCommon.Ad?) {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidFail", mapOf("" to ""))
-        }
-
-        override fun adHidden(p0: com.startapp.android.publish.adsCommon.Ad?) {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onStartAppAdDidClose", mapOf("" to ""))
-          startAppAd = null
-        }
-      })
+    } else if (call.method == "showUnityAdd") {
+        val placementId: String = call.argument<String>("placementId")!!
+      UnityAds.show(FacebookAdsPlugin.registrar?.activity(), placementId)
+        result.success(true)
     } else if (call.method == "initAdColonyAdsWithZones") {
       val appId: String = call.argument<String>("appId")!!
       val zoneIds: List<String> = call.argument<List<String>>("zoneIds")!!

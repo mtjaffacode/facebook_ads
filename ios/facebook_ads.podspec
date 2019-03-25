@@ -17,6 +17,14 @@ A new flutter plugin project.
   s.dependency 'Flutter'
   s.dependency 'FBAudienceNetwork'
   s.dependency 'AdColony'
+  s.dependency 'UnityAds'
+#  s.dependency 'StartAppSDK'
+#  s.vendored_frameworks = 'StartApp.framework'
+#  s.module_map = 'Other/facebook_ads.modulemap'
+#  s.xcconfig = { 'HEADER_SEARCH_PATHS' => '"${PODS_ROOT}/StartAppSDK"' }
+#  s.preserve_path = 'Other/facebook_ads-umbrella.h'
+
+#  s.xcconfig = { 'SWIFT_OBJC_BRIDGING_HEADER' => 'Other/BridgingHeader.h' }
 
   s.ios.deployment_target = '8.0'
   s.static_framework = true
