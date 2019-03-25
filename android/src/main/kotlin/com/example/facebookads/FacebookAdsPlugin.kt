@@ -174,7 +174,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
 
   fun initInterstitialAd(placementId: String?) {
     AdSettings.setIsChildDirected(true)
-    AdSettings.addTestDevice("6eb6ed7d-becc-42af-8d50-5ebaf6ec1ec7")
+//    AdSettings.addTestDevice("6eb6ed7d-becc-42af-8d50-5ebaf6ec1ec7")
 //    AdSettings.setTestMode(true)
     val context = FacebookAdsPlugin.registrar?.activity()
     FacebookAdsPlugin.facebookInterstitialAd = com.facebook.ads.InterstitialAd(context, placementId)
