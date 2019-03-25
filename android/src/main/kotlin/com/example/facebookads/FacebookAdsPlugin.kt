@@ -11,7 +11,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 
-class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, InterstitialAdListener, IUnityAdsListener {
+class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, InterstitialAdListener {
 
   companion object {
     var instanceChannel: MethodChannel? = null
@@ -32,36 +32,38 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     }
   }
 
-    override fun onUnityAdsError(error: UnityAds.UnityAdsError?, message: String?) {
-        FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to message))
-    }
 
-    override fun onUnityAdsFinish(placementId: String?, result: UnityAds.FinishState?) {
-        if (result == UnityAds.FinishState.COMPLETED) {
-            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidReward", mapOf("" to ""))
-            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
-        } else if (result == UnityAds.FinishState.SKIPPED) {
-            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
-        } else if (result == UnityAds.FinishState.ERROR) {
-            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
-        } else {
-            FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
-        }
-    }
-
-    override fun onUnityAdsReady(placementId: String?) {
-    }
-
-    override fun onUnityAdsStart(placementId: String?) {
-//        FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("" to ""))
-    }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
     if (call.method == "getPlatformVersion") {
       result.success("Android ${android.os.Build.VERSION.RELEASE}")
     } else if (call.method == "initUnityAds") {
       val gameId: String = call.argument<String>("gameId")!!
-      com.unity3d.ads.UnityAds.initialize(FacebookAdsPlugin.registrar?.activity(), gameId, this)
+      com.unity3d.ads.UnityAds.initialize(FacebookAdsPlugin.registrar?.activity(), gameId, object: IUnityAdsListener {
+          override fun onUnityAdsError(error: UnityAds.UnityAdsError?, message: String?) {
+              FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to message))
+          }
+
+          override fun onUnityAdsFinish(placementId: String?, result: UnityAds.FinishState?) {
+              if (result == UnityAds.FinishState.COMPLETED) {
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidReward", mapOf("" to ""))
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
+              } else if (result == UnityAds.FinishState.SKIPPED) {
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
+              } else if (result == UnityAds.FinishState.ERROR) {
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
+              } else {
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
+              }
+          }
+
+          override fun onUnityAdsReady(placementId: String?) {
+          }
+
+          override fun onUnityAdsStart(placementId: String?) {
+//        FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("" to ""))
+          }
+      })
         result.success(true)
     } else if (call.method == "loadUnityAd") {
         val placementId: String = call.argument<String>("placementId")!!
