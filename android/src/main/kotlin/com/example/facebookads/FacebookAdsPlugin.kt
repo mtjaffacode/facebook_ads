@@ -64,6 +64,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
 //        FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("" to ""))
           }
       })
+      UnityAds.setDebugMode(true)
         result.success(true)
     } else if (call.method == "loadUnityAd") {
         val placementId: String = call.argument<String>("placementId")!!
