@@ -159,6 +159,10 @@ class UnityRewardedVideoAd {
     });
   }
 
+  Future<bool> initUnityAds(bool forceTest, String gameId) {
+    return _invokeBooleanMethod("initUnityAds", <String, dynamic>{ 'gameId': gameId, "isTestMode": forceTest });
+  }
+
   /// Loads a rewarded video ad using the provided ad unit ID.
   Future<bool> load(
       {@required String placementId}) {
