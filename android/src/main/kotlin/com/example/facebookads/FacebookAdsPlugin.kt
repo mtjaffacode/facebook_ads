@@ -64,7 +64,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
 //        FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("" to ""))
           }
       })
-      UnityAds.setDebugMode(true)
+//      UnityAds.setDebugMode(true)
         result.success(true)
     } else if (call.method == "loadUnityAd") {
         val placementId: String = call.argument<String>("placementId")!!
@@ -75,7 +75,7 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       }
         result.success(true)
 //      StartAppAd. .loadAd(AdMode.REWARDED_VIDEO);
-    } else if (call.method == "showUnityAdd") {
+    } else if (call.method == "showUnityAd") {
         val placementId: String = call.argument<String>("placementId")!!
       UnityAds.show(FacebookAdsPlugin.registrar?.activity(), placementId)
         result.success(true)
