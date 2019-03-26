@@ -41,19 +41,19 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
       val gameId: String = call.argument<String>("gameId")!!
       com.unity3d.ads.UnityAds.initialize(FacebookAdsPlugin.registrar?.activity(), gameId, object: IUnityAdsListener {
           override fun onUnityAdsError(error: UnityAds.UnityAdsError?, message: String?) {
-              FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to message))
+              FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidFail", mapOf("Error" to message))
           }
 
           override fun onUnityAdsFinish(placementId: String?, result: UnityAds.FinishState?) {
               if (result == UnityAds.FinishState.COMPLETED) {
-                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidReward", mapOf("" to ""))
-                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidReward", mapOf("" to ""))
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidClose", mapOf("" to ""))
               } else if (result == UnityAds.FinishState.SKIPPED) {
-                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidClose", mapOf("" to ""))
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidClose", mapOf("" to ""))
               } else if (result == UnityAds.FinishState.ERROR) {
-                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidFail", mapOf("Error" to "Ad Failed to Load"))
               } else {
-                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ad Failed to Load"))
+                  FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidFail", mapOf("Error" to "Ad Failed to Load"))
               }
           }
 
@@ -68,9 +68,9 @@ class FacebookAdsPlugin: MethodCallHandler, RewardedVideoAdListener, Interstitia
     } else if (call.method == "loadUnityAd") {
         val placementId: String = call.argument<String>("placementId")!!
       if (UnityAds.isReady(placementId)) {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidLoad", mapOf("" to ""))
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidLoad", mapOf("" to ""))
       } else {
-          FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdsDidFail", mapOf("Error" to "Ads not ready"))
+          FacebookAdsPlugin.instanceChannel?.invokeMethod("onUnityAdDidFail", mapOf("Error" to "Ads not ready"))
       }
         result.success(true)
 //      StartAppAd. .loadAd(AdMode.REWARDED_VIDEO);
