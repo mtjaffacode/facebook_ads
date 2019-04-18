@@ -15,7 +15,7 @@ A new flutter plugin project.
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'FBAudienceNetwork'
+  s.dependency 'FBAudienceNetwork', '5.3.1'
   s.dependency 'AdColony'
   s.dependency 'UnityAds'
 #  s.dependency 'StartAppSDK'
